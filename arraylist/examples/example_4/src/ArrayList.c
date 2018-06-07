@@ -70,6 +70,32 @@ ArrayList* al_newArrayList(void)
 int al_add(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
+    void* pTemp;
+    int huboError = 0;
+
+    if(this != NULL && pElement != NULL)
+    {
+        (this + (sizeof(void*) * this->size))->pElements = pElement;
+        this->size++;
+        if(this->size >= this->reservedSize) //Tengo que expandir la lista
+        {
+            pTemp = realloc(pElement, sizeof(void) * AL_INCREMENT);
+            if(pTemp != NULL)
+            {
+                pElement = pTemp;
+                this->reservedSize = this->reservedSize + AL_INCREMENT;
+            }
+            else
+            {
+                huboError = 1;
+            }
+        }
+
+        if(huboError == 0)
+        {
+            returnAux = 0;
+        }
+    }
 
     return returnAux;
 }
