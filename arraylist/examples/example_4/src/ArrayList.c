@@ -70,23 +70,13 @@ ArrayList* al_newArrayList(void)
 int al_add(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
-    void** pTemp;
     int sinMemoria = 0;
 
     if(this != NULL && pElement != NULL)
     {
         if(this->size == this->reservedSize) //Tengo que expandir la lista
         {
-            pTemp = (void**)realloc(this->pElements, sizeof(void*) * (this->reservedSize + AL_INCREMENT));
-            if(pTemp != NULL)
-            {
-                this->pElements = pTemp;
-                this->reservedSize = this->reservedSize + AL_INCREMENT;
-            }
-            else
-            {
-                sinMemoria = 1;
-            }
+            sinMemoria = resizeUp(this);
         }
 
         if(sinMemoria == 0)
@@ -110,6 +100,12 @@ int al_deleteArrayList(ArrayList* this)
 {
     int returnAux = -1;
 
+    if(this != NULL)
+    {
+        free(this);
+        returnAux = 0;
+    }
+
     return returnAux;
 }
 
@@ -121,6 +117,11 @@ int al_deleteArrayList(ArrayList* this)
 int al_len(ArrayList* this)
 {
     int returnAux = -1;
+
+    if(this != NULL)
+    {
+        returnAux = this->size;
+    }
 
     return returnAux;
 }
@@ -329,9 +330,21 @@ int al_sort(ArrayList* this, int (*pFunc)(void* ,void*), int order)
 int resizeUp(ArrayList* this)
 {
     int returnAux = -1;
+    void** pTemp;
+
+    if(this != NULL)
+    {
+        pTemp = (void**)realloc(this->pElements, sizeof(void*) * (this->reservedSize + AL_INCREMENT));
+
+        if(pTemp != NULL)
+        {
+            this->pElements = pTemp;
+            this->reservedSize = this->reservedSize + AL_INCREMENT;
+            returnAux = 0;
+        }
+    }
 
     return returnAux;
-
 }
 
 /** \brief  Expand an array list
