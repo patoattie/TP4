@@ -137,6 +137,14 @@ void* al_get(ArrayList* this, int index)
 {
     void* returnAux = NULL;
 
+    if(this != NULL)
+    {
+        if(index >= 0 && index < this->size)
+        {
+            returnAux = *(this->pElements + index);
+        }
+    }
+
     return returnAux;
 }
 
@@ -152,6 +160,21 @@ void* al_get(ArrayList* this, int index)
 int al_contains(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
+    int i;
+
+    if(this != NULL && pElement != NULL)
+    {
+        returnAux = 0;
+
+        for(i = 0; i < this->size; i++)
+        {
+            if(al_get(this, i) == pElement)
+            {
+                returnAux = 1;
+                break;
+            }
+        }
+    }
 
     return returnAux;
 }
@@ -169,6 +192,12 @@ int al_set(ArrayList* this, int index,void* pElement)
 {
     int returnAux = -1;
 
+    if(this != NULL && pElement != NULL && index >= 0 && index < this->size)
+    {
+        *(this->pElements + index) = pElement;
+        returnAux = 0;
+    }
+
     return returnAux;
 }
 
@@ -182,6 +211,18 @@ int al_set(ArrayList* this, int index,void* pElement)
 int al_remove(ArrayList* this,int index)
 {
     int returnAux = -1;
+    int i;
+
+    if(this != NULL && index >= 0 && index < this->size)
+    {
+        for(i = index; i < (this->size - 1); i++)
+        {
+            al_set(this, index, al_get(this, index + 1));
+        }
+        this->size--;
+
+        returnAux = 0;
+    }
 
     return returnAux;
 }
@@ -197,6 +238,12 @@ int al_clear(ArrayList* this)
 {
     int returnAux = -1;
 
+    if(this != NULL)
+    {
+        this->size = 0;
+        returnAux = 0;
+    }
+
     return returnAux;
 }
 
@@ -210,6 +257,14 @@ int al_clear(ArrayList* this)
 ArrayList* al_clone(ArrayList* this)
 {
     ArrayList* returnAux = NULL;
+
+    if(this != NULL)
+    {
+        returnAux = al_newArrayList();
+        returnAux->pElements = this->pElements;
+        returnAux->size = this->size;
+        returnAux->reservedSize = this->reservedSize;
+    }
 
     return returnAux;
 }
