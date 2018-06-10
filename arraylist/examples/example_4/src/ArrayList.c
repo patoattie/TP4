@@ -160,19 +160,14 @@ void* al_get(ArrayList* this, int index)
 int al_contains(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
-    int i;
 
     if(this != NULL && pElement != NULL)
     {
         returnAux = 0;
 
-        for(i = 0; i < this->size; i++)
+        if(al_indexOf(this, pElement) >= 0)
         {
-            if(al_get(this, i) == pElement)
-            {
-                returnAux = 1;
-                break;
-            }
+            returnAux = 1;
         }
     }
 
@@ -221,6 +216,12 @@ int al_remove(ArrayList* this,int index)
         }
         this->size--;
 
+        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
+        if(this->size == this->reservedSize - AL_INCREMENT)
+        {
+            contract(this, this->size);
+        }
+
         returnAux = 0;
     }
 
@@ -241,6 +242,10 @@ int al_clear(ArrayList* this)
     if(this != NULL)
     {
         this->size = 0;
+
+        //Libero memoria al tamaño inicial definido
+        contract(this, AL_INITIAL_VALUE);
+
         returnAux = 0;
     }
 
@@ -282,6 +287,36 @@ ArrayList* al_clone(ArrayList* this)
 int al_push(ArrayList* this, int index, void* pElement)
 {
     int returnAux = -1;
+    int sinMemoria = 0;
+    int i;
+
+    if(this != NULL && pElement != NULL && index >= 0 && index <= this->size)
+    {
+        //Si el elemento es el último, llamo a al_add
+        if(index == this->size)
+        {
+            returnAux = al_add(this, pElement);
+        }
+        else
+        {
+            if(this->size == this->reservedSize) //Tengo que expandir la lista
+            {
+                sinMemoria = resizeUp(this);
+            }
+
+            if(sinMemoria == 0)
+            {
+                for(i = this->size; i > index; i--)
+                {
+                    *(this->pElements + i) = *(this->pElements + i - 1);
+                }
+                *(this->pElements + index) = pElement;
+                //this->pElements[this->size] = pElement;
+                this->size++;
+                returnAux = 0;
+            }
+        }
+    }
 
     return returnAux;
 }
@@ -296,6 +331,19 @@ int al_push(ArrayList* this, int index, void* pElement)
 int al_indexOf(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
+    int i;
+
+    if(this != NULL && pElement != NULL)
+    {
+        for(i = 0; i < this->size; i++)
+        {
+            if(al_get(this, i) == pElement)
+            {
+                returnAux = i;
+                break;
+            }
+        }
+    }
 
     return returnAux;
 }
@@ -309,6 +357,15 @@ int al_indexOf(ArrayList* this, void* pElement)
 int al_isEmpty(ArrayList* this)
 {
     int returnAux = -1;
+
+    if(this != NULL)
+    {
+        returnAux = 0;
+        if(this->size == 0)
+        {
+            returnAux = 1;
+        }
+    }
 
     return returnAux;
 }
@@ -325,6 +382,15 @@ int al_isEmpty(ArrayList* this)
 void* al_pop(ArrayList* this,int index)
 {
     void* returnAux = NULL;
+
+    if(this != NULL && index >= 0 && index < this->size)
+    {
+        returnAux = al_get(this, index);
+        if(al_remove(this, index) < 0) //Hubo error al remover el item
+        {
+            returnAux = NULL;
+        }
+    }
 
     return returnAux;
 }
@@ -411,6 +477,19 @@ int resizeUp(ArrayList* this)
 int expand(ArrayList* this,int index)
 {
     int returnAux = -1;
+    void** pTemp;
+
+    if(this != NULL && index > this->reservedSize)
+    {
+        pTemp = (void**)realloc(this->pElements, sizeof(void*) * index);
+
+        if(pTemp != NULL)
+        {
+            this->pElements = pTemp;
+            this->reservedSize = index;
+            returnAux = 0;
+        }
+    }
 
     return returnAux;
 }
@@ -424,6 +503,13 @@ int expand(ArrayList* this,int index)
 int contract(ArrayList* this,int index)
 {
     int returnAux = -1;
+
+    if(this != NULL && index >= AL_INITIAL_VALUE && index < this->reservedSize)
+    {
+        this->pElements = (void**)realloc(this->pElements, sizeof(void*) * index);
+        this->reservedSize = index;
+        returnAux = 0;
+    }
 
     return returnAux;
 }
