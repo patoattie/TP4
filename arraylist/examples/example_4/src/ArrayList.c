@@ -473,6 +473,48 @@ int al_containsAll(ArrayList* this,ArrayList* this2)
 int al_sort(ArrayList* this, int (*pFunc)(void* ,void*), int order)
 {
     int returnAux = -1;
+    int i;
+    int j;
+    void* elementoI;
+    void* elementoJ;
+    //void* aux;
+    int huboError = 0;
+
+    if(this != NULL && pFunc != NULL && (order == 0 || order == 1))
+    {
+        for(i = 0; i < this->size - 1; i++)
+        {
+            for(j = i + 1; j < this->size; j++)
+            {
+                elementoI = al_get(this, i);
+                elementoJ = al_get(this, j);
+                if((pFunc(elementoI, elementoJ) == -1 && order == 0) || (pFunc(elementoI, elementoJ) == 1 && order == 1))
+                {
+                    //aux = elementoI;
+                    if(al_set(this, i, elementoJ) < 0)
+                    {
+                        huboError = 1;
+                        break;
+                    }
+                    if(al_set(this, j, elementoI) < 0)
+                    {
+                        huboError = 1;
+                        break;
+                    }
+                }
+            }
+
+            if(huboError == 1)
+            {
+                break;
+            }
+        }
+
+        if(huboError == 0)
+        {
+            returnAux = 0;
+        }
+    }
 
     return returnAux;
 }
