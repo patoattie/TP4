@@ -68,8 +68,12 @@ int main(void)
         system("pause");
         system("cls");
         startTesting(14);
-        //startTesting(15);
-        //startTesting(16);
+        system("pause");
+        system("cls");
+        startTesting(15);
+        system("pause");
+        system("cls");
+        startTesting(16);
         //startTesting(17);
 
     return 0;

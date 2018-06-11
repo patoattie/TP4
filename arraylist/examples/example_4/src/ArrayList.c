@@ -406,7 +406,22 @@ void* al_pop(ArrayList* this,int index)
  */
 ArrayList* al_subList(ArrayList* this,int from,int to)
 {
-    void* returnAux = NULL;
+    ArrayList* returnAux = NULL;
+    int i;
+
+    if(this != NULL && from >= 0 && to <= this->size && from < to)
+    {
+        returnAux = al_newArrayList();
+        for(i = from; i < to; i++)
+        {
+            if(al_add(returnAux, al_get(this, i)) < 0) //Si hay error vuelvo a nulificar returnAux
+            {
+                al_clear(returnAux);
+                returnAux = NULL;
+                break;
+            }
+        }
+    }
 
     return returnAux ;
 }
@@ -424,6 +439,26 @@ ArrayList* al_subList(ArrayList* this,int from,int to)
 int al_containsAll(ArrayList* this,ArrayList* this2)
 {
     int returnAux = -1;
+    int i;
+    int cantidadHallada = 0;
+
+    if(this != NULL && this2 != NULL)
+    {
+        returnAux = 0;
+
+        for(i = 0; i < this2->size; i++)
+        {
+            if(al_indexOf(this, al_get(this2, i)) >= 0)
+            {
+                cantidadHallada++;
+            }
+        }
+
+        if(cantidadHallada == al_len(this2)) //Si todos los elementos de this2 fueron hallados en this
+        {
+            returnAux = 1;
+        }
+    }
 
     return returnAux;
 }
