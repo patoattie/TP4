@@ -324,11 +324,8 @@ int al_push(ArrayList* this, int index, void* pElement)
             {
                 //*(this->pElements + index) = pElement;
                 //this->pElements[this->size] = pElement;
-                if(al_set(this, index, pElement) == 0) //Guarda el dato OK
-                {
-                    //this->size++;
-                    returnAux = 0;
-                }
+                //this->size++;
+                returnAux = al_set(this, index, pElement);
             }
         }
     }
@@ -660,10 +657,9 @@ int contract(ArrayList* this,int index)
         }
         this->size--;
 
-        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
-        if(this->size == this->reservedSize - AL_INCREMENT)
+        //Libero memoria si el size tiene una distancia del doble de AL_INCREMENT con respecto a reservedSize
+        if(this->size == this->reservedSize - (AL_INCREMENT * 2))
         {
-            //contract(this, this->size);
             resizeDown(this);
         }
 
