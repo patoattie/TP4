@@ -102,6 +102,7 @@ int al_deleteArrayList(ArrayList* this)
 
     if(this != NULL)
     {
+        al_clear(this);
         free(this);
         returnAux = 0;
     }
@@ -210,9 +211,11 @@ int al_remove(ArrayList* this,int index)
 
     if(this != NULL && index >= 0 && index < this->size)
     {
+        free(al_get(this, index));
+
         for(i = index; i < (this->size - 1); i++)
         {
-            al_set(this, index, al_get(this, index + 1));
+            al_set(this, i, al_get(this, i + 1));
         }
         this->size--;
 
@@ -238,9 +241,14 @@ int al_remove(ArrayList* this,int index)
 int al_clear(ArrayList* this)
 {
     int returnAux = -1;
+    int i;
 
     if(this != NULL)
     {
+        for(i = 0; i < this->size; i++)
+        {
+            free(al_get(this, i));
+        }
         this->size = 0;
 
         //Libero memoria al tamaño inicial definido
@@ -382,14 +390,27 @@ int al_isEmpty(ArrayList* this)
 void* al_pop(ArrayList* this,int index)
 {
     void* returnAux = NULL;
+    int i;
 
     if(this != NULL && index >= 0 && index < this->size)
     {
         returnAux = al_get(this, index);
-        if(al_remove(this, index) < 0) //Hubo error al remover el item
+        /*if(al_remove(this, index) < 0) //Hubo error al remover el item
         {
             returnAux = NULL;
+        }*/
+        for(i = index; i < (this->size - 1); i++)
+        {
+            al_set(this, i, al_get(this, i + 1));
         }
+        this->size--;
+
+        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
+        if(this->size == this->reservedSize - AL_INCREMENT)
+        {
+            contract(this, this->size);
+        }
+
     }
 
     return returnAux;
