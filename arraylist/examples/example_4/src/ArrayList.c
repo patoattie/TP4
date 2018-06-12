@@ -233,6 +233,14 @@ int al_remove(ArrayList* this,int index)
     {
         if(contract(this, index) == 0)
         {
+            this->size--;
+
+            //Libero memoria si el size tiene una distancia del doble de AL_INCREMENT con respecto a reservedSize
+            if(this->size == this->reservedSize - (AL_INCREMENT * 2))
+            {
+                resizeDown(this);
+            }
+
             returnAux = 0;
         }
     }
@@ -398,11 +406,8 @@ void* al_pop(ArrayList* this,int index)
     if(this != NULL && index >= 0 && index < this->size)
     {
         returnAux = al_get(this, index);
-        /*if(al_remove(this, index) < 0) //Hubo error al remover el item
-        {
-            returnAux = NULL;
-        }*/
-        if(contract(this, index) < 0)
+
+        if(al_remove(this, index) < 0) //Hubo error al remover el item
         {
             returnAux = NULL;
         }
@@ -621,19 +626,6 @@ int expand(ArrayList* this,int index)
             returnAux = 0;
         }
     }
-    /*void** pTemp;
-
-    if(this != NULL && index > this->reservedSize)
-    {
-        pTemp = (void**)realloc(this->pElements, sizeof(void*) * index);
-
-        if(pTemp != NULL)
-        {
-            this->pElements = pTemp;
-            this->reservedSize = index;
-            returnAux = 0;
-        }
-    }*/
 
     return returnAux;
 }
@@ -655,23 +647,9 @@ int contract(ArrayList* this,int index)
         {
             al_set(this, i, al_get(this, i + 1));
         }
-        this->size--;
-
-        //Libero memoria si el size tiene una distancia del doble de AL_INCREMENT con respecto a reservedSize
-        if(this->size == this->reservedSize - (AL_INCREMENT * 2))
-        {
-            resizeDown(this);
-        }
 
         returnAux = 0;
     }
-
-    /*if(this != NULL && index >= AL_INITIAL_VALUE && index < this->reservedSize)
-    {
-        this->pElements = (void**)realloc(this->pElements, sizeof(void*) * index);
-        this->reservedSize = index;
-        returnAux = 0;
-    }*/
 
     return returnAux;
 }
