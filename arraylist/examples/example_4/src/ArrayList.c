@@ -5,6 +5,7 @@
 
 // funciones privadas
 int resizeUp(ArrayList* this);
+int resizeDown(ArrayList* this);
 int expand(ArrayList* this,int index);
 int contract(ArrayList* this,int index);
 
@@ -71,6 +72,7 @@ int al_add(ArrayList* this, void* pElement)
 {
     int returnAux = -1;
     int sinMemoria = 0;
+    int indice;
 
     if(this != NULL && pElement != NULL)
     {
@@ -81,10 +83,18 @@ int al_add(ArrayList* this, void* pElement)
 
         if(sinMemoria == 0)
         {
-            *(this->pElements + this->size) = pElement;
-            //this->pElements[this->size] = pElement;
+            indice = this->size;
             this->size++;
-            returnAux = 0;
+            if(al_set(this, indice, pElement) < 0) //Hubo error al guardar el dato
+            {
+                this->size--; //Vuelvo el tamaño a su valor original
+            }
+            else //OK
+            {
+                returnAux = 0;
+            }
+            //*(this->pElements + this->size) = pElement;
+            //this->pElements[this->size] = pElement;
         }
     }
 
@@ -102,7 +112,11 @@ int al_deleteArrayList(ArrayList* this)
 
     if(this != NULL)
     {
-        al_clear(this);
+        if(this->pElements != NULL)
+        {
+            free(this->pElements);
+        }
+        //al_clear(this);
         free(this);
         returnAux = 0;
     }
@@ -188,10 +202,17 @@ int al_set(ArrayList* this, int index,void* pElement)
 {
     int returnAux = -1;
 
-    if(this != NULL && pElement != NULL && index >= 0 && index < this->size)
+    if(this != NULL && pElement != NULL && index >= 0 && index <= this->size)
     {
-        *(this->pElements + index) = pElement;
-        returnAux = 0;
+        if(index == this->size)
+        {
+            returnAux = al_add(this, pElement);
+        }
+        else
+        {
+            *(this->pElements + index) = pElement;
+            returnAux = 0;
+        }
     }
 
     return returnAux;
@@ -207,25 +228,13 @@ int al_set(ArrayList* this, int index,void* pElement)
 int al_remove(ArrayList* this,int index)
 {
     int returnAux = -1;
-    int i;
 
     if(this != NULL && index >= 0 && index < this->size)
     {
-        free(al_get(this, index));
-
-        for(i = index; i < (this->size - 1); i++)
+        if(contract(this, index) == 0)
         {
-            al_set(this, i, al_get(this, i + 1));
+            returnAux = 0;
         }
-        this->size--;
-
-        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
-        if(this->size == this->reservedSize - AL_INCREMENT)
-        {
-            contract(this, this->size);
-        }
-
-        returnAux = 0;
     }
 
     return returnAux;
@@ -241,18 +250,14 @@ int al_remove(ArrayList* this,int index)
 int al_clear(ArrayList* this)
 {
     int returnAux = -1;
-    int i;
 
     if(this != NULL)
     {
-        for(i = 0; i < this->size; i++)
-        {
-            free(al_get(this, i));
-        }
         this->size = 0;
 
         //Libero memoria al tamaño inicial definido
-        contract(this, AL_INITIAL_VALUE);
+        this->pElements = (void**)realloc(this->pElements, sizeof(void*) * AL_INITIAL_VALUE);
+        this->reservedSize = AL_INITIAL_VALUE;
 
         returnAux = 0;
     }
@@ -270,13 +275,23 @@ int al_clear(ArrayList* this)
 ArrayList* al_clone(ArrayList* this)
 {
     ArrayList* returnAux = NULL;
+    int i;
 
     if(this != NULL)
     {
         returnAux = al_newArrayList();
-        returnAux->pElements = this->pElements;
+        for(i = 0; i < this->size; i++)
+        {
+            if(al_add(returnAux, al_get(this, i)) < 0) //Si hay error vuelvo a nulificar returnAux
+            {
+                al_deleteArrayList(returnAux);
+                returnAux = NULL;
+                break;
+            }
+        }
+        /*returnAux->pElements = this->pElements;
         returnAux->size = this->size;
-        returnAux->reservedSize = this->reservedSize;
+        returnAux->reservedSize = this->reservedSize;*/
     }
 
     return returnAux;
@@ -295,8 +310,6 @@ ArrayList* al_clone(ArrayList* this)
 int al_push(ArrayList* this, int index, void* pElement)
 {
     int returnAux = -1;
-    int sinMemoria = 0;
-    int i;
 
     if(this != NULL && pElement != NULL && index >= 0 && index <= this->size)
     {
@@ -307,21 +320,15 @@ int al_push(ArrayList* this, int index, void* pElement)
         }
         else
         {
-            if(this->size == this->reservedSize) //Tengo que expandir la lista
+            if(expand(this, index) == 0)
             {
-                sinMemoria = resizeUp(this);
-            }
-
-            if(sinMemoria == 0)
-            {
-                for(i = this->size; i > index; i--)
-                {
-                    *(this->pElements + i) = *(this->pElements + i - 1);
-                }
-                *(this->pElements + index) = pElement;
+                //*(this->pElements + index) = pElement;
                 //this->pElements[this->size] = pElement;
-                this->size++;
-                returnAux = 0;
+                if(al_set(this, index, pElement) == 0) //Guarda el dato OK
+                {
+                    //this->size++;
+                    returnAux = 0;
+                }
             }
         }
     }
@@ -390,7 +397,6 @@ int al_isEmpty(ArrayList* this)
 void* al_pop(ArrayList* this,int index)
 {
     void* returnAux = NULL;
-    int i;
 
     if(this != NULL && index >= 0 && index < this->size)
     {
@@ -399,18 +405,10 @@ void* al_pop(ArrayList* this,int index)
         {
             returnAux = NULL;
         }*/
-        for(i = index; i < (this->size - 1); i++)
+        if(contract(this, index) < 0)
         {
-            al_set(this, i, al_get(this, i + 1));
+            returnAux = NULL;
         }
-        this->size--;
-
-        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
-        if(this->size == this->reservedSize - AL_INCREMENT)
-        {
-            contract(this, this->size);
-        }
-
     }
 
     return returnAux;
@@ -437,7 +435,7 @@ ArrayList* al_subList(ArrayList* this,int from,int to)
         {
             if(al_add(returnAux, al_get(this, i)) < 0) //Si hay error vuelvo a nulificar returnAux
             {
-                al_clear(returnAux);
+                al_deleteArrayList(returnAux);
                 returnAux = NULL;
                 break;
             }
@@ -566,6 +564,26 @@ int resizeUp(ArrayList* this)
     return returnAux;
 }
 
+
+/** \brief Decrement the number of elements in pList in AL_INCREMENT elements.
+ * \param pList ArrayList* Pointer to arrayList
+ * \return int Return (-1) if Error [pList is NULL pointer]
+ *                  - (0) if ok
+ */
+int resizeDown(ArrayList* this)
+{
+    int returnAux = -1;
+
+    if(this != NULL)
+    {
+        this->pElements = (void**)realloc(this->pElements, sizeof(void*) * (this->reservedSize - AL_INCREMENT));
+        this->reservedSize = this->reservedSize - AL_INCREMENT;
+        returnAux = 0;
+    }
+
+    return returnAux;
+}
+
 /** \brief  Expand an array list
  * \param pList ArrayList* Pointer to arrayList
  * \param index int Index of the element
@@ -575,7 +593,38 @@ int resizeUp(ArrayList* this)
 int expand(ArrayList* this,int index)
 {
     int returnAux = -1;
-    void** pTemp;
+    int i;
+    int huboError = 0;
+
+    if(this != NULL && index >= 0 && index < this->size)
+    {
+        for(i = this->size; i > index; i--)
+        {
+            if(i == this->size)
+            {
+                if(al_add(this, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
+                {
+                    huboError = 1;
+                    break;
+                }
+            }
+            else
+            {
+                //*(this->pElements + i) = *(this->pElements + i - 1);
+                if(al_set(this, i, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
+                {
+                    huboError = 1;
+                    break;
+                }
+            }
+        }
+
+        if(huboError == 0)
+        {
+            returnAux = 0;
+        }
+    }
+    /*void** pTemp;
 
     if(this != NULL && index > this->reservedSize)
     {
@@ -587,7 +636,7 @@ int expand(ArrayList* this,int index)
             this->reservedSize = index;
             returnAux = 0;
         }
-    }
+    }*/
 
     return returnAux;
 }
@@ -601,13 +650,32 @@ int expand(ArrayList* this,int index)
 int contract(ArrayList* this,int index)
 {
     int returnAux = -1;
+    int i;
 
-    if(this != NULL && index >= AL_INITIAL_VALUE && index < this->reservedSize)
+    if(this != NULL && index >= 0 && index < this->size)
+    {
+        for(i = index; i < (this->size - 1); i++)
+        {
+            al_set(this, i, al_get(this, i + 1));
+        }
+        this->size--;
+
+        //Libero memoria si el size tiene una distancia de AL_INCREMENT con respecto a reservedSize
+        if(this->size == this->reservedSize - AL_INCREMENT)
+        {
+            //contract(this, this->size);
+            resizeDown(this);
+        }
+
+        returnAux = 0;
+    }
+
+    /*if(this != NULL && index >= AL_INITIAL_VALUE && index < this->reservedSize)
     {
         this->pElements = (void**)realloc(this->pElements, sizeof(void*) * index);
         this->reservedSize = index;
         returnAux = 0;
-    }
+    }*/
 
     return returnAux;
 }
