@@ -398,7 +398,7 @@ void* al_pop(ArrayList* this,int index)
 {
     void* returnAux = NULL;
 
-    if(this != NULL && index >= 0 && index < this->size)
+    if(this != NULL && index >= 0 && index < al_len(this))
     {
         returnAux = al_get(this, index);
 
@@ -425,7 +425,7 @@ ArrayList* al_subList(ArrayList* this,int from,int to)
     ArrayList* returnAux = NULL;
     int i;
 
-    if(this != NULL && from >= 0 && to <= this->size && from < to)
+    if(this != NULL && from >= 0 && to <= al_len(this) && from < to)
     {
         returnAux = al_newArrayList();
         for(i = from; i < to; i++)
@@ -495,12 +495,13 @@ int al_sort(ArrayList* this, int (*pFunc)(void* ,void*), int order)
     void* elementoJ;
     //void* aux;
     int huboError = 0;
+    int len = al_len(this);
 
     if(this != NULL && pFunc != NULL && (order == 0 || order == 1))
     {
-        for(i = 0; i < this->size - 1; i++)
+        for(i = 0; i < len - 1; i++)
         {
-            for(j = i + 1; j < this->size; j++)
+            for(j = i + 1; j < len; j++)
             {
                 elementoI = al_get(this, i);
                 elementoJ = al_get(this, j);
@@ -596,12 +597,13 @@ int expand(ArrayList* this,int index)
     int returnAux = -1;
     int i;
     int huboError = 0;
+    int len = al_len(this);
 
-    if(this != NULL && index >= 0 && index < this->size)
+    if(this != NULL && index >= 0 && index < len)
     {
-        for(i = this->size; i > index; i--)
+        for(i = len; i > index; i--)
         {
-            if(i == this->size)
+            if(i == len)
             {
                 if(al_add(this, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
                 {
