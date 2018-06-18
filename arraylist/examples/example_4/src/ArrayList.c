@@ -277,12 +277,13 @@ int al_clear(ArrayList* this)
 ArrayList* al_clone(ArrayList* this)
 {
     ArrayList* returnAux = NULL;
-    int i;
-    void* pElement;
+    //int i;
+    //void* pElement;
 
     if(this != NULL)
     {
-        returnAux = al_newArrayList();
+        returnAux = al_subList(this, 0, al_len(this));
+        /*returnAux = al_newArrayList();
         for(i = 0; i < al_len(this); i++)
         {
             pElement = al_get(this, i);
@@ -292,7 +293,7 @@ ArrayList* al_clone(ArrayList* this)
                 returnAux = NULL;
                 break;
             }
-        }
+        }*/
         /*returnAux->pElements = this->pElements;
         returnAux->size = this->size;
         returnAux->reservedSize = this->reservedSize;*/
