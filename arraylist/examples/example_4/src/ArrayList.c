@@ -277,26 +277,10 @@ int al_clear(ArrayList* this)
 ArrayList* al_clone(ArrayList* this)
 {
     ArrayList* returnAux = NULL;
-    //int i;
-    //void* pElement;
 
     if(this != NULL)
     {
         returnAux = al_subList(this, 0, al_len(this));
-        /*returnAux = al_newArrayList();
-        for(i = 0; i < al_len(this); i++)
-        {
-            pElement = al_get(this, i);
-            if(pElement == NULL || al_add(returnAux, pElement) < 0) //Si hay error vuelvo a nulificar returnAux
-            {
-                al_deleteArrayList(returnAux);
-                returnAux = NULL;
-                break;
-            }
-        }*/
-        /*returnAux->pElements = this->pElements;
-        returnAux->size = this->size;
-        returnAux->reservedSize = this->reservedSize;*/
     }
 
     return returnAux;
@@ -319,12 +303,9 @@ int al_push(ArrayList* this, int index, void* pElement)
 
     if(this != NULL && pElement != NULL && index >= 0 && index <= len)
     {
-        //Si el elemento es el último, llamo a al_add
-        if(index == len)
-        {
-            returnAux = al_add(this, pElement);
-        }
-        else
+        returnAux = al_add(this, pElement);
+
+        if(index < len) //Si no hago un push sobre el len original, llamo a expand
         {
             if(expand(this, index) == 0)
             {
@@ -607,24 +588,12 @@ int expand(ArrayList* this,int index)
 
     if(this != NULL && index >= 0 && index < len)
     {
-        for(i = len; i > index; i--)
+        for(i = len - 1; i > index; i--)
         {
-            if(i == len)
+            if(al_set(this, i, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
             {
-                if(al_add(this, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
-                {
-                    huboError = 1;
-                    break;
-                }
-            }
-            else
-            {
-                //*(this->pElements + i) = *(this->pElements + i - 1);
-                if(al_set(this, i, al_get(this, i - 1)) < 0) //Hubo error al guardar el dato
-                {
-                    huboError = 1;
-                    break;
-                }
+                huboError = 1;
+                break;
             }
         }
 
