@@ -457,20 +457,26 @@ int al_containsAll(ArrayList* this,ArrayList* this2)
     int returnAux = -1;
     int i;
     int cantidadHallada = 0;
+    int len = al_len(this);
+    int len2 = al_len(this2);
 
     if(this != NULL && this2 != NULL)
     {
         returnAux = 0;
 
-        for(i = 0; i < this2->size; i++)
+        if(len >= len2)
         {
-            if(al_indexOf(this, al_get(this2, i)) >= 0)
+            for(i = 0; i < len2; i++)
             {
-                cantidadHallada++;
+                //if(al_indexOf(this, al_get(this2, i)) >= 0)
+                if(al_contains(this, al_get(this2, i)) == 1)
+                {
+                    cantidadHallada++;
+                }
             }
         }
 
-        if(cantidadHallada == al_len(this2)) //Si todos los elementos de this2 fueron hallados en this
+        if(cantidadHallada == len2) //Si todos los elementos de this2 fueron hallados en this
         {
             returnAux = 1;
         }
