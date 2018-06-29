@@ -231,6 +231,7 @@ int expand(ArrayList* this,int index);
  */
 int contract(ArrayList* this,int index);
 
+ArrayList* al_filter(ArrayList* listIn, int (*functionFilter)(void*));
 
 // Private function
 int resizeUp(ArrayList* this);

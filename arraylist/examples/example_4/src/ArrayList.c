@@ -523,6 +523,28 @@ int al_sort(ArrayList* this, int (*pFunc)(void* ,void*), int order)
     return returnAux;
 }
 
+ArrayList* al_filter(ArrayList* listIn, int (*functionFilter)(void*))
+{
+    ArrayList* retorno = NULL;
+    void* unElemento = NULL;
+    int i;
+
+    if(listIn != NULL)
+    {
+        retorno = al_newArrayList();
+
+        for(i = 0; i < al_len(listIn); i++)
+        {
+            unElemento = al_get(listIn, i);
+            if(functionFilter(unElemento) == 1)
+            {
+                al_add(retorno, unElemento);
+            }
+        }
+    }
+
+    return retorno;
+}
 
 /** \brief Increment the number of elements in pList in AL_INCREMENT elements.
  * \param pList ArrayList* Pointer to arrayList
