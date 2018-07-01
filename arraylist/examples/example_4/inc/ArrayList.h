@@ -42,8 +42,6 @@ struct ArrayList{
     int     (*deleteArrayList)();
 
 }typedef ArrayList;
-#endif
-
 
 /** \brief Allocate a new arrayList with AL_INITIAL_VALUE elements.
  * \param void
@@ -238,3 +236,5 @@ int resizeUp(ArrayList* this);
 int expand(ArrayList* this,int index);
 int contract(ArrayList* this,int index);
 //___________________
+
+#endif
